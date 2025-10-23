@@ -3,10 +3,10 @@ import java.awt.*;
 import javax.swing.*;
 
 class CarbonFootprintTracker extends JFrame implements ActionListener {
-    JTextField transportField, electricityField, garbageField;
+    JTextField TransportField, ElectricityField, GarbageField;
     JButton calculateButton, clearButton;
     JTextArea resultArea;
-    JLabel titleLabel, transportLabel, electricityLabel, garbageLabel;
+    JLabel titleLabel, TransportLabel, ElectricityLabel, GarbageLabel;
     double totalEmission = 0;
     
     CarbonFootprintTracker() {
@@ -19,34 +19,34 @@ class CarbonFootprintTracker extends JFrame implements ActionListener {
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
         add(titleLabel);
         
-        transportLabel = new JLabel("Transportation (km/day):");
-        transportLabel.setBounds(50, 70, 200, 25);
-        add(transportLabel);
+        TransportLabel = new JLabel("Transportation (km/day):");
+        TransportLabel.setBounds(50, 70, 200, 25);
+        add(TransportLabel);
         
-        transportField = new JTextField();
-        transportField.setBounds(250, 70, 150, 25);
+        TransportField = new JTextField();
+        TransportField.setBounds(250, 70, 150, 25);
         add(transportField);
         
-        electricityLabel = new JLabel("Electricity (kWh/day):");
-        electricityLabel.setBounds(50, 110, 200, 25);
+        ElectricityLabel = new JLabel("Electricity (kWh/day):");
+        ElectricityLabel.setBounds(50, 110, 200, 25);
         add(electricityLabel);
         
-        electricityField = new JTextField();
-        electricityField.setBounds(250, 110, 150, 25);
-        add(electricityField);
+        ElectricityField = new JTextField();
+        ElectricityField.setBounds(250, 110, 150, 25);
+        add(ElectricityField);
         
-        garbageLabel = new JLabel("Garbage (kg/day):");
-        garbageLabel.setBounds(50, 150, 200, 25);
-        add(garbageLabel);
+        GarbageLabel = new JLabel("Garbage (kg/day):");
+        GarbageLabel.setBounds(50, 150, 200, 25);
+        add(GarbageLabel);
         
-        garbageField = new JTextField();
-        garbageField.setBounds(250, 150, 150, 25);
-        add(garbageField);
+        GarbageField = new JTextField();
+        GarbageField.setBounds(250, 150, 150, 25);
+        add(GarbageField);
         
-        calculateButton = new JButton("Calculate Footprint");
-        calculateButton.setBounds(50, 200, 180, 35);
-        calculateButton.addActionListener(this);
-        add(calculateButton);
+        CalculateButton = new JButton("Calculate Footprint");
+        CalculateButton.setBounds(50, 200, 180, 35);
+        CalculateButton.addActionListener(this);
+        add(CalculateButton);
         
         clearButton = new JButton("Clear");
         clearButton.setBounds(250, 200, 150, 35);
@@ -69,9 +69,9 @@ class CarbonFootprintTracker extends JFrame implements ActionListener {
         JButton clickedButton = (JButton) e.getSource();
         
         if (clickedButton == clearButton) {
-            transportField.setText("");
-            electricityField.setText("");
-            garbageField.setText("");
+            TransportField.setText("");
+            ElectricityField.setText("");
+            GarbageField.setText("");
             resultArea.setText("");
             totalEmission = 0;
         } else if (clickedButton == calculateButton) {
@@ -81,40 +81,40 @@ class CarbonFootprintTracker extends JFrame implements ActionListener {
     
     void calculateFootprint() {
         try {
-            double transport = 0, electricity = 0, garbage = 0;
+            double Transport = 0, Electricity = 0, Garbage = 0;
             
             
-            if (!transportField.getText().isEmpty()) {
-                transport = Double.parseDouble(transportField.getText());
+            if (!TransportField.getText().isEmpty()) {
+                Transport = Double.parseDouble(TransportField.getText());
             }
-            if (!electricityField.getText().isEmpty()) {
-                electricity = Double.parseDouble(electricityField.getText());
+            if (!ElectricityField.getText().isEmpty()) {
+                Electricity = Double.parseDouble(ElectricityField.getText());
             }
-            if (!garbageField.getText().isEmpty()) {
-                garbage = Double.parseDouble(garbageField.getText());
+            if (!GarbageField.getText().isEmpty()) {
+                Garbage = Double.parseDouble(GarbageField.getText());
             }
             
-            double transportEmission = transport * 0.21;  
-            double electricityEmission = electricity * 0.5;  
-            double garbageEmission = garbage * 0.3;  
+            double TransportEmission = Transport * 0.21;  
+            double ElectricityEmission = Electricity * 0.5;  
+            double GarbageEmission = Garbage * 0.3;  
             
-            totalEmission = transportEmission + electricityEmission + garbageEmission;
+            TotalEmission = TransportEmission + ElectricityEmission + GarbageEmission;
             
             String result = "==== CARBON FOOTPRINT REPORT ====\n\n";
-            result += "Transportation: " + formatNumber(transportEmission) + " kg CO2\n";
-            result += "Electricity: " + formatNumber(electricityEmission) + " kg CO2\n";
-            result += "Garbage: " + formatNumber(garbageEmission) + " kg CO2\n";
+            result += "Transportation: " + formatNumber(TransportEmission) + " kg CO2\n";
+            result += "Electricity: " + formatNumber(ElectricityEmission) + " kg CO2\n";
+            result += "Garbage: " + formatNumber(GarbageEmission) + " kg CO2\n";
             result += "-------------------------\n";
-            result += "TOTAL DAILY: " + formatNumber(totalEmission) + " kg CO2\n";
-            result += "MONTHLY: " + formatNumber(totalEmission * 30) + " kg CO2\n";
-            result += "YEARLY: " + formatNumber(totalEmission * 365) + " kg CO2\n\n";
+            result += "TOTAL DAILY: " + formatNumber(TotalEmission) + " kg CO2\n";
+            result += "MONTHLY: " + formatNumber(TotalEmission * 30) + " kg CO2\n";
+            result += "YEARLY: " + formatNumber(TotalEmission * 365) + " kg CO2\n\n";
             
             result += "==== SUGGESTIONS ====\n";
-            if (totalEmission > 10) {
+            if (TotalEmission > 10) {
                 result += "* Use public transport\n";
                 result += "* Reduce electricity usage\n";
                 result += "* Recycle waste properly\n";
-            } else if (totalEmission > 5) {
+            } else if (TotalEmission > 5) {
                 result += "* Good! Try to reduce more\n";
                 result += "* Consider carpooling\n";
             } else {
