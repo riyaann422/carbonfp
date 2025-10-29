@@ -1,0 +1,233 @@
+package carbonfp;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.util.ArrayList;
+import java.util.List;
+
+public class TrackerFrame extends JFrame implements ActionListener {
+
+    JButton CalculateButton, ClearButton, SaveButton, HistoryButton;
+    JTextArea ResultArea;
+//personal tab    
+    JTextField NameField, HeightField, WeightField;
+    JComboBox<String> GenderBox, DietBox, SocialActivityBox;
+//travel tab
+    JComboBox<String> TransportModeBox, VehicleTypeBox, AirTravelBox;
+    JTextField VehicleKmField; 
+//waste tab
+    JComboBox<String> WasteBagSizeBox;
+    JTextField WasteBagCountField;
+    JCheckBox PlasticBox, PaperBox,GlassBox, MetalBox;
+//energy tab
+    JComboBox<String> CookingSourceBox, EnergyEffBox;
+    JCheckBox MicrowaveBox, OvenBox, GrillBox, AirfryerBox, StoveBox;
+    JTextField TvField;
+    JTextField NetField;
+//consumption
+    JComboBox<String> ShowerFrequencyBox;
+    JTextField GroceryField;
+    JTextField ClothesField;
+
+    FootprintCalculator calculator;
+    Record record;
+    CarbonRecord lastRecord = null;
+
+    public TrackerFrame() {
+        String DB_URL = "jdbc:mysql://localhost:3306/carbon";
+        String USER = "root";
+        String PASS = "";
+        record = new Record(DB_URL, USER, PASS);
+        calculator = new FootprintCalculator();
+
+        setTitle("Carbon Footprint Tracker");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(600, 800); 
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+        
+        JLabel titleLabel = new JLabel("Carbon Footprint Calculator", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        titleLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        add(titleLabel, BorderLayout.NORTH);
+//tabs
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.addTab("Personal", createPersonalPanel());
+        tabbedPane.addTab("Travel", createTravelPanel());
+        tabbedPane.addTab("Waste", createWastePanel());
+        tabbedPane.addTab("Energy", createEnergyPanel());
+        tabbedPane.addTab("Consumption", createConsumptionPanel());
+        add(tabbedPane, BorderLayout.CENTER);
+//bottompanel
+        JPanel bottomPanel = new JPanel(new BorderLayout(10, 10));
+        bottomPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        CalculateButton = new JButton("Calculate");
+        ClearButton = new JButton("Clear");
+        SaveButton = new JButton("Save");
+        HistoryButton = new JButton("History");
+
+        CalculateButton.addActionListener(this);
+        ClearButton.addActionListener(this);
+        SaveButton.addActionListener(this);
+        HistoryButton.addActionListener(this);
+
+        buttonPanel.add(CalculateButton);
+        buttonPanel.add(ClearButton);
+        buttonPanel.add(SaveButton);
+        buttonPanel.add(HistoryButton);
+        
+        bottomPanel.add(buttonPanel, BorderLayout.NORTH);
+
+        ResultArea = new JTextArea();
+        ResultArea.setEditable(false);
+        ResultArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        JScrollPane scrollPane = new JScrollPane(ResultArea);
+        scrollPane.setPreferredSize(new Dimension(400, 250));
+        bottomPanel.add(scrollPane, BorderLayout.CENTER);
+
+        add(bottomPanel, BorderLayout.SOUTH);
+        setVisible(true);
+    }
+    
+    private JPanel createPersonalPanel() {
+        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
+        NameField = new JTextField();
+        HeightField = new JTextField("");
+        WeightField = new JTextField("");
+        GenderBox = new JComboBox<>(new String[]{"Female", "Male"});
+        DietBox = new JComboBox<>(new String[]{"Omnivore", "Vegetarian", "Vegan"});
+        SocialActivityBox = new JComboBox<>(new String[]{"Never", "Sometimes", "Often"});
+        
+        panel.add(new JLabel("Your Name:"));
+        panel.add(NameField);
+        panel.add(new JLabel("Height(cm):"));
+        panel.add(HeightField);
+        panel.add(new JLabel("Weight(kg):"));
+        panel.add(WeightField);
+        panel.add(new JLabel("Gender:"));
+        panel.add(GenderBox);
+        panel.add(new JLabel("Diet:"));
+        panel.add(DietBox);
+        panel.add(new JLabel("Social Activity:"));
+        panel.add(SocialActivityBox);
+        
+        return panel;
+    }
+
+    private JPanel createTravelPanel() {
+        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
+        TransportModeBox = new JComboBox<>(new String[]{"Public", "Private", "Walk/Bicycle"});
+        VehicleTypeBox = new JComboBox<>(new String[]{"Petrol", "Diesel", "Hybrid", "LPG", "Electric"});
+        AirTravelBox = new JComboBox<>(new String[]{"Never", "Rarely (1-4 Hours)", "Frequently (5-10 Hours)", "Very Frequently (10+ Hours)"});
+
+        TransportModeBox.addActionListener(e -> {
+            VehicleTypeBox.setEnabled(TransportModeBox.getSelectedItem().equals("Private"));
+        });
+        VehicleTypeBox.setEnabled(false); 
+
+        VehicleKmField = new JTextField(""); 
+        
+        panel.add(new JLabel("Transportation:"));
+        panel.add(TransportModeBox);
+        panel.add(new JLabel("Vehicle Type (if private):"));
+        panel.add(VehicleTypeBox);
+        panel.add(new JLabel("Monthly Vehicle Distance (km):"));
+        panel.add(VehicleKmField);
+        panel.add(new JLabel("Monthly Air Travel:"));
+        panel.add(AirTravelBox);
+
+        return panel;
+    }
+
+    private JPanel createWastePanel() {
+        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        WasteBagSizeBox = new JComboBox<>(new String[]{"Small (approx. 2kg)", "Medium (approx. 5kg)", "Large (approx. 10kg)", "Extra Large (approx. 15kg)" });
+        WasteBagCountField = new JTextField(""); 
+        
+        panel.add(new JLabel("Waste Bag Size:"));
+        panel.add(WasteBagSizeBox);
+        panel.add(new JLabel("Waste Bags per Week:"));
+        panel.add(WasteBagCountField);
+        
+        panel.add(new JLabel("Materials Recycled:"));
+        JPanel recyclePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        PlasticBox = new JCheckBox("Plastic");
+        PaperBox = new JCheckBox("Paper");
+        GlassBox = new JCheckBox("Glass");
+        MetalBox = new JCheckBox("Metal");
+        recyclePanel.add(PlasticBox);
+        recyclePanel.add(PaperBox);
+        recyclePanel.add(GlassBox);
+        recyclePanel.add(MetalBox);
+        panel.add(recyclePanel);
+        
+        return panel;
+    }
+
+    private JPanel createEnergyPanel() {
+        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
+        CookingSourceBox = new JComboBox<>(new String[]{"Natural Gas", "Electricity", "Wood", "Coal"});
+        EnergyEffBox = new JComboBox<>(new String[]{"No", "Yes", "Sometimes"});
+        
+        TvField = new JTextField("");
+        NetField = new JTextField("");
+        
+        panel.add(new JLabel("Energy Efficiency?"));
+        panel.add(EnergyEffBox);
+        panel.add(new JLabel("Daily Screen/TV Hours:"));
+        panel.add(TvField);
+        
+        panel.add(new JLabel("Cooking Systems Used:"));
+        JPanel cookPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        MicrowaveBox = new JCheckBox("Microwave");
+        OvenBox = new JCheckBox("Oven");
+        GrillBox = new JCheckBox("Grill");
+        AirfryerBox = new JCheckBox("Airfryer");
+        StoveBox = new JCheckBox("Stove");
+        cookPanel.add(MicrowaveBox);
+        cookPanel.add(OvenBox);
+        cookPanel.add(GrillBox);
+        cookPanel.add(AirfryerBox);
+        cookPanel.add(StoveBox);
+        panel.add(cookPanel);
+
+        panel.add(new JLabel("Cooking Source:")); 
+        panel.add(CookingSourceBox);
+        
+        panel.add(new JLabel("Daily Internet Hours:"));
+        panel.add(NetField); 
+        
+        return panel;
+    }
+    
+    private JPanel createConsumptionPanel() {
+        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        ShowerFrequencyBox = new JComboBox<>(new String[]{"Daily", "Twice a day", "More frequently", "Less frequently"});
+        GroceryField = new JTextField("");
+        ClothesField = new JTextField("");
+        
+        panel.add(new JLabel("Shower Frequency:"));
+        panel.add(ShowerFrequencyBox);
+       
+        panel.add(new JLabel("Monthly Grocery (₹):"));
+        panel.add(GroceryField);
+        panel.add(new JLabel("Clothes Bought Monthly:"));
+        panel.add(ClothesField);
+
+        return panel;
+    }
+//event handling 
